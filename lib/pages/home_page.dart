@@ -51,7 +51,8 @@ class HomePage extends StatelessWidget {
                             labelText: "Item",
                             contentPadding: EdgeInsets.all(16),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
                             ),
                           ),
                         ),
@@ -80,7 +81,8 @@ class HomePage extends StatelessWidget {
                             labelText: "Price",
                             contentPadding: EdgeInsets.all(16),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(5)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5)),
                             ),
                           ),
                         ),
@@ -181,6 +183,44 @@ class HomePage extends StatelessWidget {
           },
         ),
       ),
+      persistentFooterButtons: <Widget>[
+        StreamBuilder<List<ShopItemData>>(
+            initialData: shopBloc.shopList,
+            stream: shopBloc.shopStream,
+            builder: (BuildContext context,
+                AsyncSnapshot<List<ShopItemData>> snapshot) {
+              var val = snapshot.data
+                  .map((e) => e.price)
+                  .fold(0, (previousValue, element) => previousValue + element);
+              val = val.toStringAsFixed(2);
+              return Text(
+                "Total: \$ $val",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            }),
+        StreamBuilder<List<ShopItemData>>(
+            initialData: shopBloc.shopList,
+            stream: shopBloc.shopStream,
+            builder: (context, AsyncSnapshot<List<ShopItemData>> snapshot) {
+              var val = snapshot.data
+                  .where((element) => !element.checked)
+                  .map((e) => e.price)
+                  .fold(0, (previousValue, element) => previousValue + element);
+              val = val.toStringAsFixed(2);
+              return Text(
+                "Balance: \$ $val",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            })
+      ],
     );
   }
 }
