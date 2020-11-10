@@ -50,6 +50,17 @@ class ShopBloc {
     cartStreamController.sink.add(cartList);
   }
 
+  void removeItemFromShopList(ShopItemData shopItemData) {
+    shopList.remove(shopItemData);
+    cartList.remove(shopItemData);
+    shopStreamController.sink.add(shopList);
+  }
+
+  void restoreShopItem(ShopItemData shopItemData, int index) {
+    shopList.insert(index, shopItemData);
+    shopStreamController.sink.add(shopList);
+  }
+
   void dispose() {
     shopStreamController.close();
     cartStreamController.close();

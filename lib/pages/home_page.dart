@@ -8,6 +8,8 @@ class HomePage extends StatelessWidget {
   final TextEditingController itemController = TextEditingController(text: "");
   final TextEditingController priceController = TextEditingController(text: "");
 
+  var dismissedItem;
+
   void _showCreateShopItemDialog(BuildContext context) async {
     GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -175,8 +177,28 @@ class HomePage extends StatelessWidget {
                     itemCount: snapshot.data.length,
                     itemBuilder: (BuildContext context, int index) {
                       if (!snapshot.hasError && snapshot.data != null) {
-                        return ShopListItem(
-                            shopItemData: snapshot.data.elementAt(index));
+                        return Dismissible(
+                          key: Key(snapshot.data.elementAt(index).item),
+                          confirmDismiss: (direction) async {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              duration: Duration(milliseconds: 2000),
+                              action: SnackBarAction(label: "Undo", onPressed: () {
+                                shopBloc.restoreShopItem(dismissedItem, index);
+                              }),
+                              content: Text(
+                                  "Delete ${snapshot.data.elementAt(index).item}?"),
+                            ));
+                            return true;
+                          },
+                          onDismissed: (DismissDirection direction) {
+                            dismissedItem = snapshot.data.elementAt(index);
+                            shopBloc.removeItemFromShopList(
+                                snapshot.data.elementAt(index));
+                          },
+                          child: ShopListItem(
+                            shopItemData: snapshot.data.elementAt(index),
+                          ),
+                        );
                       }
                       return null;
                     });
