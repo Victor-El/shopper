@@ -61,6 +61,12 @@ class ShopBloc {
     shopStreamController.sink.add(shopList);
   }
 
+  void clearShopAndCart() {
+    shopList.clear();
+    cartList.clear();
+    shopStreamController.sink.add(shopList);
+  }
+
   void dispose() {
     shopStreamController.close();
     cartStreamController.close();

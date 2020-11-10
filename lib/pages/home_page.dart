@@ -136,6 +136,15 @@ class HomePage extends StatelessWidget {
         actions: <Widget>[
           FlatButton(
             onPressed: () {
+              shopBloc.clearShopAndCart();
+            },
+            child: Icon(
+              Icons.delete_forever,
+              color: Colors.white,
+            ),
+          ),
+          FlatButton(
+            onPressed: () {
               Navigator.pushNamed(context, "/cart");
             },
             child: Icon(
