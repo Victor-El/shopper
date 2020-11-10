@@ -39,8 +39,14 @@ class _CartPageState extends State<CartPage> {
             itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
                 if (!snapshot.hasError && snapshot.data != null) {
-                  return CartListItem(
-                      shopItemData: snapshot.data.elementAt(index));
+                  return Dismissible(
+                    key: UniqueKey(),
+                    onDismissed: (direction) {
+                      shopBloc.toggleChecked(snapshot.data.elementAt(index), false);
+                    },
+                    child: CartListItem(
+                        shopItemData: snapshot.data.elementAt(index)),
+                  );
                 }
                 return null;
               });
