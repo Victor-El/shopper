@@ -3,7 +3,7 @@ import 'package:shopper/data/local/db_contract.dart';
 import 'package:shopper/models/shop_item_data.dart';
 import 'package:sqflite/sqflite.dart';
 
-class ShopDataProvider {
+class CartDataProvider {
   Database db;
 
   Future open(String path) async {
