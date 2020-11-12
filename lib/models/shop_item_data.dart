@@ -17,11 +17,15 @@ class ShopItemData {
   }
 
   Map<String, dynamic>toMap() {
-    return {
+    var map = {
       ITEM_COLUMN: this._item,
       PRICE_COLUMN: this._price,
       CHECKED_COLUMN: this._checked == true ? 1 : 0
     };
+    if (this._id != null) {
+      map[ID] = this._id;
+    }
+    return map;
   }
 
   int get id => _id;
