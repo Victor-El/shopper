@@ -1,8 +1,17 @@
 import 'dart:async';
 
+import 'package:shopper/data/local/cart_data_provider.dart';
+import 'package:shopper/data/local/data_provider_wrapper.dart';
+import 'package:shopper/data/local/db_contract.dart';
+import 'package:shopper/data/local/shop_data_provider.dart';
 import 'package:shopper/models/shop_item_data.dart';
 
 class ShopBloc {
+
+  ShopDataProvider _shopDataProvider;
+  CartDataProvider _cartDataProvider;
+  DataProviderWrapper _dataProviderWrapper;
+
   final shopStreamController = StreamController<List<ShopItemData>>.broadcast();
   final cartStreamController = StreamController<List<ShopItemData>>.broadcast();
 
@@ -12,24 +21,39 @@ class ShopBloc {
   Stream<List<ShopItemData>> get shopStream => shopStreamController.stream;
   Stream<List<ShopItemData>> get cartStream => cartStreamController.stream;
 
+  ShopBloc() {
+    _shopDataProvider = new ShopDataProvider();
+    _cartDataProvider = new CartDataProvider();
+    _dataProviderWrapper = new DataProviderWrapper();
+  }
+
+  Future init() async {
+    await _shopDataProvider.open(SHOP_DATABASE);
+    await _cartDataProvider.open(SHOP_DATABASE);
+  }
+
   void moveToCart(ShopItemData shopItemData) {
-    cartList.add(shopItemData);
-    cartStreamController.sink.add(cartList);
+    _cartDataProvider.insertShopItem(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void moveToShop(ShopItemData shopItemData) {
-    cartList.remove(shopItemData);
-    cartStreamController.sink.add(cartList);
+    _cartDataProvider.deleteShopItemData(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void add(ShopItemData shopItemData) {
-    shopList.add(shopItemData);
-    shopStreamController.sink.add(shopList);
+    _shopDataProvider.insertShopItem(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void remove(ShopItemData shopItemData) {
-    shopList.remove(shopItemData);
-    shopStreamController.sink.add(shopList);
+    _shopDataProvider.deleteShopItemData(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void toggleChecked(ShopItemData shopItemData, bool value) {
@@ -51,20 +75,34 @@ class ShopBloc {
   }
 
   void removeItemFromShopList(ShopItemData shopItemData) {
-    shopList.remove(shopItemData);
-    cartList.remove(shopItemData);
-    shopStreamController.sink.add(shopList);
+    _dataProviderWrapper.removeItemFromShopList(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void restoreShopItem(ShopItemData shopItemData, int index) {
-    shopList.insert(index, shopItemData);
-    shopStreamController.sink.add(shopList);
+    _shopDataProvider.insertShopItem(shopItemData).then((value) {
+      updateListeners();
+    });
   }
 
   void clearShopAndCart() {
-    shopList.clear();
-    cartList.clear();
+    _dataProviderWrapper.clearShopAndCart().then((value) {
+      updateListeners();
+    });
+  }
+
+  Future persistStateOnPause() async {
+    _dataProviderWrapper.persistStateOnPause(shopList, cartList).then((value) {
+      updateListeners();
+    });
+  }
+
+  Future updateListeners() async {
+    shopList = (await _shopDataProvider.getAll()).map((e) => ShopItemData.fromMap(e)).toList();
+    cartList = (await _cartDataProvider.getAll()).map((e) => ShopItemData.fromMap(e)).toList();
     shopStreamController.sink.add(shopList);
+    cartStreamController.sink.add(cartList);
   }
 
   void dispose() {

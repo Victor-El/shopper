@@ -4,11 +4,20 @@ import 'package:shopper/blocs/shop_bloc.dart';
 import 'package:shopper/models/shop_item_data.dart';
 import 'package:shopper/widgets/shop_list_item.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatelessWidget with WidgetsBindingObserver {
   final TextEditingController itemController = TextEditingController(text: "");
   final TextEditingController priceController = TextEditingController(text: "");
 
   var dismissedItem;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      print("PAUSED STATE");
+      shopBloc.persistStateOnPause();
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   void _showCreateShopItemDialog(BuildContext context) async {
     GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -131,6 +140,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    shopBloc.init().then((value) {
+      shopBloc.updateListeners();
+    });
+    WidgetsBinding.instance.addObserver(this);
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -168,6 +181,7 @@ class HomePage extends StatelessWidget {
       body: Container(
         padding: EdgeInsets.all(10),
         child: StreamBuilder(
+          initialData: shopBloc.shopList,
           stream: shopBloc.shopStream,
           builder: (BuildContext context,
               AsyncSnapshot<List<ShopItemData>> snapshot) {
@@ -187,7 +201,7 @@ class HomePage extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       if (!snapshot.hasError && snapshot.data != null) {
                         return Dismissible(
-                          key: Key(snapshot.data.elementAt(index).item),
+                          key: UniqueKey(),
                           confirmDismiss: (direction) async {
                             Scaffold.of(context).showSnackBar(SnackBar(
                               duration: Duration(milliseconds: 2000),
@@ -254,4 +268,5 @@ class HomePage extends StatelessWidget {
       ],
     );
   }
+
 }
